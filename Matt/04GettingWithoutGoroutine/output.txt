@@ -1,0 +1,6 @@
+URL:https://google.com	LATENCY:727ms
+URL:https://fb.com	LATENCY:552ms
+URL:https://youtube.com	LATENCY:345ms
+URL:http://localhost:8080/	LATENCY:7.007s
+
+Time to run the program : 9s
