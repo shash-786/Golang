@@ -8,36 +8,43 @@ import (
 )
 
 type WordOut struct {
-	doc   string
-	input string
-	pages []string
+  Doc   string `json:"doc"`
+  Input string `json:"input"`
+  Pages []string `json:"pages"`
 }
 
-func (*wh WordOut) page_handler(w http.ResponseWriter, r *http.Request) {
+type WordsHandler struct {
+  words []string
+  password string
+  tokenSecret []byte
+}
+
+func (wh *WordsHandler) Page_handler(w http.ResponseWriter , r *http.Request) {
   input := r.URL.Query().Get("input")
   if input != "" {
-    wh.pages = append(wh.pages, input)
+    wh.words = append(wh.words, input)
   }
 
-  Output := &WordOut{
-    doc: "words",
-    input: input,
-    pages:  wh.pages,
+  output := WordOut{
+    Doc: "words",
+    Input: input,
+    Pages:  wh.words,
   }
 
-  out, err = json.Marshal(Output)
+  out, err := json.Marshal(output)
   if err != nil {
     fmt.Println("Error in marhsalling")
+    return;
   }
 
-  fmt.Fprintf(w, string(out))
-}
+  fmt.Fprint(w, string(out))
+} 
 
 func main() {
-	w := &WordOut{
-    pages: make([]string, 0),
+	w := &WordsHandler{
+    words: []string{},
 	}
 
-  http.HandleFunc("/put", w.page_handler())
+  http.HandleFunc("/put", w.Page_handler)
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
