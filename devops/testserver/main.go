@@ -7,28 +7,33 @@ import (
 	"net/http"
 )
 
-type WordOut struct {
-  Doc   string `json:"doc"`
+type WordsOut struct {
+  Page string `json:"page"`
   Input string `json:"input"`
-  Pages []string `json:"pages"`
+  Words []string `json:"words"`
 }
 
-type WordsHandler struct {
+type OccurenceOut struct {
+  Page string `json:"page"`
+  Freq map[string]int `json:"freq"`
+}
+
+type database struct {
   words []string
-  password string
-  tokenSecret []byte
+  // password string
+  // tokenSecret []byte
 }
 
-func (wh *WordsHandler) Page_handler(w http.ResponseWriter , r *http.Request) {
+func (db *database) insert_handler(w http.ResponseWriter , r *http.Request) {
   input := r.URL.Query().Get("input")
   if input != "" {
-    wh.words = append(wh.words, input)
+    db.words = append(db.words, input)
   }
 
-  output := WordOut{
-    Doc: "words",
+  output := WordsOut{
+    Page: "words",
     Input: input,
-    Pages:  wh.words,
+    Words:  db.words,
   }
 
   out, err := json.Marshal(output)
@@ -38,13 +43,36 @@ func (wh *WordsHandler) Page_handler(w http.ResponseWriter , r *http.Request) {
   }
 
   fmt.Fprint(w, string(out))
-} 
+}
+
+func (db *database) occurence_handler(w http.ResponseWriter, r *http.Request) {
+  mp := make(map[string]int)
+  for _, v := range db.words {
+    if _, ok := mp[v]; !ok {
+      mp[v] = 1;
+    } else {
+      mp[v]++
+    }
+  }
+
+  occurenceout := OccurenceOut{
+    Page: "occurence",
+    Freq: mp,
+  }
+ 
+  out, err := json.Marshal(occurenceout)
+  if err != nil {
+    log.Print(err)
+  }
+  fmt.Fprint(w, string(out))
+}
 
 func main() {
-	w := &WordsHandler{
+	db := &database{
     words: []string{},
 	}
 
-  http.HandleFunc("/put", w.Page_handler)
+  http.HandleFunc("/put", db.insert_handler)
+  http.HandleFunc("/occur", db.occurence_handler)
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
