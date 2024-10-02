@@ -54,6 +54,7 @@ func main() {
   }
 
   switch page.Name {
+
   case "words":
     var words Words
     if err = json.Unmarshal(body, &words); err != nil {

@@ -11,9 +11,9 @@ import (
 )
 
 type Words struct {
-  Doc string `json:"doc"`
+  Page string `json:"page"`
   Input string `json:"input"`
-  Pages []string `json:"pages"`
+  Words []string `json:"words"`
 }
 
 func main() {
@@ -55,5 +55,5 @@ func main() {
     log.Fatal(err)
   }
   
-  fmt.Printf("Doc:%s\nPages:%v", words.Doc, words.Pages)
+  fmt.Printf("Doc:%s\nPages:%v", words.Page, words.Words)
 }
