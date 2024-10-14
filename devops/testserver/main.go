@@ -21,8 +21,8 @@ type WordsOut struct {
 }
 
 type OccurenceOut struct {
-	Page string         `json:"page"`
 	Freq map[string]int `json:"freq"`
+	Page string         `json:"page"`
 }
 
 type LoginRequest struct {
@@ -159,6 +159,7 @@ func (db *database) middleware(next http.HandlerFunc) http.HandlerFunc {
 			}
 
 			tokenstring := strings.Replace(r.Header.Get("Authorization"), "Bearer ", "", -1)
+
 			_, err := jwt.Parse(tokenstring, func(token *jwt.Token) (interface{}, error) {
 				if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 					return nil, fmt.Errorf("Unexpected Signing Method: %v", ok)
@@ -176,7 +177,7 @@ func (db *database) middleware(next http.HandlerFunc) http.HandlerFunc {
 }
 
 func main() {
-	var password *string = flag.String("password", "", "Password to Protect API")
+	password := flag.String("password", "", "Password to Protect API")
 	flag.Parse()
 
 	db := &database{
@@ -186,7 +187,7 @@ func main() {
 	}
 
 	http.HandleFunc("/put", db.middleware(db.insert_handler))
-	http.HandleFunc("/login", db.middleware(db.login_handler))
+	http.HandleFunc("/login", db.login_handler)
 	http.HandleFunc("/occur", db.occurence_handler)
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
