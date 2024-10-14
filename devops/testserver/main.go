@@ -186,6 +186,8 @@ func main() {
 		tokenSecret: getsecret(),
 	}
 
+	// http.HandleFunc("/put", db.middleware(db.insert_handler))
+	// http.HandleFunc("/", db.logging_handler)
 	http.HandleFunc("/put", db.middleware(db.insert_handler))
 	http.HandleFunc("/login", db.login_handler)
 	http.HandleFunc("/occur", db.occurence_handler)
