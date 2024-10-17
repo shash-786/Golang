@@ -1,7 +1,10 @@
 package api
 
 import (
+	"encoding/json"
 	"fmt"
+	"io"
+	"net/http"
 	"strings"
 )
 
@@ -31,8 +34,46 @@ func (o Occur) GetResponse() string {
 	for key, value := range o.Freq {
 		map_slice = append(map_slice, fmt.Sprintf("Key:%s Value:%d", key, value))
 	}
-	return fmt.Sprintf("Occurence\n", strings.Join(map_slice, ""))
+	return fmt.Sprintf("Occurence\n%s", strings.Join(map_slice, ""))
 }
 
 func (a *API_instance) DoGetrequest(requestURL string) (Response, error) {
+	var (
+		err      error
+		response *http.Response
+		body     []byte
+		page     Page
+	)
+
+	if response, err = http.Get(requestURL); err != nil {
+		return nil, fmt.Errorf("./usage http.get: %v", err)
+	}
+	defer response.Body.Close()
+
+	if body, err = io.ReadAll(response.Body); err != nil {
+		return nil, fmt.Errorf("./usage io.Readall: %v", err)
+	}
+
+	if err = json.Unmarshal(body, &page); err != nil {
+		return nil, fmt.Errorf("page name unmarshal error: %v", err)
+	}
+
+	switch page.Name {
+	case "words":
+		var words Words
+		if err = json.Unmarshal(body, &words); err != nil {
+			return nil, fmt.Errorf("words unmrashal error: %v", err)
+		}
+		return words, nil
+
+	case "occurence":
+		var occur Occur
+		if err = json.Unmarshal(body, err); err != nil {
+			return nil, fmt.Errorf("occur unmarshal error: %v", err)
+		}
+		return occur, nil
+
+	default:
+		return nil, nil
+	}
 }
