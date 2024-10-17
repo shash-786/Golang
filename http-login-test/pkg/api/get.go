@@ -26,15 +26,15 @@ type Response interface {
 }
 
 func (w Words) GetResponse() string {
-	return fmt.Sprintf("Words -> %s", strings.Join(w.Words, ","))
+	return fmt.Sprintf("Words -> %s\n", strings.Join(w.Words, ","))
 }
 
 func (o Occur) GetResponse() string {
 	map_slice := make([]string, 0)
 	for key, value := range o.Freq {
-		map_slice = append(map_slice, fmt.Sprintf("Key:%s Value:%d", key, value))
+		map_slice = append(map_slice, fmt.Sprintf("%s:%d", key, value))
 	}
-	return fmt.Sprintf("Occurence\n%s", strings.Join(map_slice, ""))
+	return fmt.Sprintf("Occurences -> %s\n", strings.Join(map_slice, ","))
 }
 
 func (a *API_instance) DoGetrequest(requestURL string) (Response, error) {
@@ -45,7 +45,7 @@ func (a *API_instance) DoGetrequest(requestURL string) (Response, error) {
 		page     Page
 	)
 
-	if response, err = http.Get(requestURL); err != nil {
+	if response, err = a.Client.Get(requestURL); err != nil {
 		return nil, fmt.Errorf("./usage http.get: %v", err)
 	}
 	defer response.Body.Close()
@@ -68,7 +68,7 @@ func (a *API_instance) DoGetrequest(requestURL string) (Response, error) {
 
 	case "occurence":
 		var occur Occur
-		if err = json.Unmarshal(body, err); err != nil {
+		if err = json.Unmarshal(body, &occur); err != nil {
 			return nil, fmt.Errorf("occur unmarshal error: %v", err)
 		}
 		return occur, nil
