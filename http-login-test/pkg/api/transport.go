@@ -9,6 +9,7 @@ import (
 type myjwt_transport struct {
 	token, loginURL, password string
 	transport                 http.RoundTripper
+	HTTPclient                ClientIface
 }
 
 func (m *myjwt_transport) RoundTrip(req *http.Request) (*http.Response, error) {
@@ -17,7 +18,7 @@ func (m *myjwt_transport) RoundTrip(req *http.Request) (*http.Response, error) {
 			err   error
 			token string
 		)
-		if token, err = DoLoginRequest(m.loginURL, m.password); err != nil {
+		if token, err = DoLoginRequest(m.HTTPclient, m.loginURL, m.password); err != nil {
 			log.Fatalf("LoginRequest Failed: %v", err)
 		}
 		m.token = token

@@ -17,11 +17,12 @@ type WordsOut struct {
 }
 
 type mockclient struct {
-	response *http.Response
+	Getresponse  *http.Response
+	Postresponse *http.Response
 }
 
 func (m *mockclient) Get(url string) (resp *http.Response, err error) {
-	return m.response, nil
+	return m.Getresponse, nil
 }
 
 func TestDoGetRequest(t *testing.T) {
@@ -43,7 +44,7 @@ func TestDoGetRequest(t *testing.T) {
 
 	api := API_instance{
 		Client: &mockclient{
-			response: &http.Response{
+			Getresponse: &http.Response{
 				StatusCode: 200,
 				Body:       io.NopCloser(bytes.NewBuffer(output)),
 			},

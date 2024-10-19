@@ -16,7 +16,7 @@ type LoginResponse struct {
 	Token string `json:"token"`
 }
 
-func DoLoginRequest(loginURL, password string) (string, error) {
+func DoLoginRequest(client ClientIface, loginURL, password string) (string, error) {
 	var (
 		err            error
 		response       *http.Response
@@ -31,7 +31,7 @@ func DoLoginRequest(loginURL, password string) (string, error) {
 	if to_login, err = json.Marshal(loginrequest); err != nil {
 		return "", fmt.Errorf("loginRequest Marshal error: %v", err)
 	}
-	if response, err = http.Post(loginURL, "application/json", bytes.NewBuffer(to_login)); err != nil {
+	if response, err = client.Post(loginURL, "application/json", bytes.NewBuffer(to_login)); err != nil {
 		return "", fmt.Errorf("./usage http.post: %v", err)
 	}
 	defer response.Body.Close()
