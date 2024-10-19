@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 )
 
@@ -43,6 +44,11 @@ func DoGetRequest(client *http.Client, request string) (*Response, error) {
 	if err = json.Unmarshal(body, &output); err != nil {
 		return nil, fmt.Errorf("unmarshal error %v", err)
 	}
+	prettyJSON, err := json.MarshalIndent(output, "", "  ")
+	if err != nil {
+		log.Fatalf("Error marshaling JSON: %v", err)
+	}
 
+	fmt.Println(string(prettyJSON))
 	return &output, nil
 }

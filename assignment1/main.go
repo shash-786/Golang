@@ -44,7 +44,7 @@ func main() {
 		log.Fatalf("Error in DoGetRequest: %v", err)
 	}
 
-	fmt.Printf("Page:%s\n", response.Page)
+	fmt.Printf("\n\nPage:%s\n", response.Page)
 	fmt.Printf("Words:%s\n", strings.Join(response.Words, ","))
 	fmt.Printf("Map:%s\n", getString(response.Percentages))
 	fmt.Printf("Special:%v\n", response.Special)
