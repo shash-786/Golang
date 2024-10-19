@@ -1,7 +1,6 @@
 package api
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 )
@@ -22,7 +21,7 @@ func (m *myjwt_transport) RoundTrip(req *http.Request) (*http.Response, error) {
 			log.Fatalf("LoginRequest Failed: %v", err)
 		}
 		m.token = token
-		fmt.Println(token)
+		// fmt.Println(token)
 	}
 	if m.token != "" {
 		req.Header.Add("Authorization", "Bearer "+m.token)
