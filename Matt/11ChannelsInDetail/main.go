@@ -19,7 +19,7 @@ func do(i int, channel chan<- *T) {
 	// is an appropriate reader present on the  other end so
 	// NOTE: In line number 15 the goroutines will stop until  there
 	// is a reader present in arr[i] = *<-channel
-	// So  by the time the bool value is updated in the do function the read
+	// So by the time the bool value is updated in the do function the read
 	// Has Already Happened
 	//
 	// FIX: To fix this we can make  the channel buffered so that the bool
