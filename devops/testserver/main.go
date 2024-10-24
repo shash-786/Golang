@@ -186,10 +186,14 @@ func main() {
 		tokenSecret: getsecret(),
 	}
 
+	rl := &RateLimit{
+		hits: make(map[string]uint64),
+	}
 	// http.HandleFunc("/put", db.middleware(db.insert_handler))
 	// http.HandleFunc("/", db.logging_handler)
 	http.HandleFunc("/put", db.middleware(db.insert_handler))
 	http.HandleFunc("/login", db.login_handler)
+	http.HandleFunc("/ratelimit", rl.ratelimit)
 	http.HandleFunc("/occur", db.occurence_handler)
 	http.HandleFunc("/assignment1", db.assignment1)
 	log.Fatal(http.ListenAndServe(":8080", nil))
