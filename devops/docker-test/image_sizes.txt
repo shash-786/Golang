@@ -1,0 +1,6 @@
+REPOSITORY                 TAG       IMAGE ID       CREATED         SIZE
+server_scratch             latest    b9ac6a88e4a4   4 minutes ago   7.21MB
+server2                    latest    2c000e9cd0f7   3 hours ago     325MB
+test-server                latest    1de82ef2957c   4 hours ago     16.7MB
+golang                     latest    0df964ebf32f   3 weeks ago     845MB
+docker/welcome-to-docker   latest    648f93a1ba7d   11 months ago   19MB
