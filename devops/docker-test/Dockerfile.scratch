@@ -1,0 +1,17 @@
+FROM golang:1.23-alpine as go-builder
+
+WORKDIR /app
+
+COPY go.mod /app/
+RUN go mod download
+
+COPY . .
+RUN go build -o server *.go && apk add -u -t build-tools curl git && rm -rf /var/cache
+
+FROM scratch
+
+COPY --from=go-builder /app/server /app/server
+
+EXPOSE 8080
+
+ENTRYPOINT [ "/app/server" ]
