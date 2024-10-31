@@ -58,7 +58,7 @@ func ec2Instance(region string) (string, error) {
 			return "", fmt.Errorf("CreateKeyPair error: %v", err)
 		}
 
-		if err := os.WriteFile("go-aws-demo.pem", []byte(*new_key_pair.KeyMaterial), 06000); err != nil {
+		if err := os.WriteFile("go-aws-demo.pem", []byte(*new_key_pair.KeyMaterial), 0600); err != nil {
 			return "", fmt.Errorf("writefile error: %v", err)
 		}
 	} else {
