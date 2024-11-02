@@ -4,9 +4,11 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 )
@@ -14,6 +16,10 @@ import (
 type S3Client interface {
 	ListBuckets(ctx context.Context, params *s3.ListBucketsInput, optFns ...func(*s3.Options)) (*s3.ListBucketsOutput, error)
 	CreateBucket(ctx context.Context, params *s3.CreateBucketInput, optFns ...func(*s3.Options)) (*s3.CreateBucketOutput, error)
+}
+
+type S3Uploader interface {
+	Upload(ctx context.Context, input *s3.PutObjectInput, opts ...func(*manager.Uploader)) (*manager.UploadOutput, error)
 }
 
 const (
@@ -24,7 +30,7 @@ const (
 
 func main() {
 	var err error
-	var client S3Client
+	var client *s3.Client
 
 	if client, err = initClient(); err != nil {
 		log.Fatalf("initClient error: %v", err)
@@ -32,6 +38,11 @@ func main() {
 
 	if err = createS3Bucket(client); err != nil {
 		log.Fatalf("createS3Bucket error: %v", err)
+	}
+
+	uploader := manager.NewUploader(client)
+	if err = uploadfiletoS3(uploader); err != nil {
+		log.Fatalf("uploadfiletoS3 error: %v", err)
 	}
 }
 
@@ -67,7 +78,28 @@ func createS3Bucket(client S3Client) error {
 	return nil
 }
 
-func initClient() (S3Client, error) {
+func uploadfiletoS3(uploader S3Uploader) error {
+	var (
+		err  error
+		file *os.File
+	)
+	if file, err = os.Open(filename); err != nil {
+		return fmt.Errorf("File open error: %v", err)
+	}
+	defer file.Close()
+
+	_, err = uploader.Upload(context.Background(), &s3.PutObjectInput{
+		Key:    aws.String(file.Name()),
+		Bucket: aws.String(BUCKETNAME),
+		Body:   file,
+	})
+	if err != nil {
+		return fmt.Errorf("manager.Uploader.upload error : %v", err)
+	}
+	return nil
+}
+
+func initClient() (*s3.Client, error) {
 	var (
 		cnfg aws.Config
 		err  error
