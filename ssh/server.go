@@ -102,6 +102,11 @@ func handleConnection(conn *ssh.ServerConn, chans <-chan ssh.NewChannel) {
 			for req := range in {
 				fmt.Printf("Request Type made by client: %s\n", req.Type)
 				switch req.Type {
+				case "exec":
+					// fmt.Printf("%v %v", req.Payload, []byte("whoami"))
+					payload := req.Payload[4:]
+					exec(payload, conn)
+					channel.Close()
 				case "pty-req":
 					createTerminal(conn, channel)
 				case "shell":
@@ -123,7 +128,7 @@ func createTerminal(conn *ssh.ServerConn, channel ssh.Channel) {
 		for {
 			line, err := termInstance.ReadLine()
 			if err != nil {
-				fmt.Printf("ReadLinde error: %s", err)
+				fmt.Printf("ReadLine error: %s", err)
 				break
 			}
 
@@ -134,8 +139,17 @@ func createTerminal(conn *ssh.ServerConn, channel ssh.Channel) {
 				termInstance.Write([]byte(fmt.Sprint("Exiting session!")))
 				channel.Close()
 			default:
-				termInstance.Write([]byte("Command not found\n"))
+				termInstance.Write([]byte("unknown shell command\n"))
 			}
 		}
 	}()
+}
+
+func exec(command []byte, conn *ssh.ServerConn) {
+	switch string(command) {
+	case "whoami":
+		fmt.Printf("You are %s\n", conn.User())
+	default:
+		fmt.Println("unknown exec command")
+	}
 }
