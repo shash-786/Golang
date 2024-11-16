@@ -116,7 +116,7 @@ func handleConnection(conn *ssh.ServerConn, chans <-chan ssh.NewChannel) {
 }
 
 func createTerminal(conn *ssh.ServerConn, channel ssh.Channel) {
-	termInstance := term.NewTerminal(channel, "> ")
+	termInstance := term.NewTerminal(channel, "? ")
 
 	go func() {
 		defer channel.Close()
@@ -129,8 +129,10 @@ func createTerminal(conn *ssh.ServerConn, channel ssh.Channel) {
 
 			switch line {
 			case "whoami":
-				termInstance.Write([]byte(fmt.Sprintf("You are: %s\n", conn.Conn.User())))
-			case "":
+				termInstance.Write([]byte(fmt.Sprintf("You are: %s\n", conn.User())))
+			case "quit":
+				termInstance.Write([]byte(fmt.Sprint("Exiting session!")))
+				channel.Close()
 			default:
 				termInstance.Write([]byte("Command not found\n"))
 			}

@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	PEM_BLOCK_TYPE = "RSA-PRIVATE-KEY"
+	PEM_BLOCK_TYPE = "RSA PRIVATE KEY"
 	KEY_SIZE       = 4096
 )
 

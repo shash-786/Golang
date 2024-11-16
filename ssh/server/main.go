@@ -24,7 +24,7 @@ func main() {
 	}
 
 	if err = ssh.StartServer(priv, pub); err != nil {
-		fmt.Printf("Start Server error %v", err)
+		fmt.Printf("Start Server error --> %v", err)
 		os.Exit(1)
 	}
 }
