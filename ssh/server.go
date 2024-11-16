@@ -105,7 +105,9 @@ func handleConnection(conn *ssh.ServerConn, chans <-chan ssh.NewChannel) {
 				case "exec":
 					// fmt.Printf("%v %v", req.Payload, []byte("whoami"))
 					payload := req.Payload[4:]
-					exec(payload, conn)
+					channel.Write([]byte(exec(payload, conn)))
+					channel.SendRequest("exit-status", false, []byte{0, 0, 0, 0})
+					req.Reply(true, nil)
 					channel.Close()
 				case "pty-req":
 					createTerminal(conn, channel)
@@ -145,11 +147,11 @@ func createTerminal(conn *ssh.ServerConn, channel ssh.Channel) {
 	}()
 }
 
-func exec(command []byte, conn *ssh.ServerConn) {
+func exec(command []byte, conn *ssh.ServerConn) string {
 	switch string(command) {
 	case "whoami":
-		fmt.Printf("You are %s\n", conn.User())
+		return fmt.Sprintf("You are %s\n", conn.User())
 	default:
-		fmt.Println("unknown exec command")
+		return fmt.Sprintf("unknown exec command %s", string(command))
 	}
 }
