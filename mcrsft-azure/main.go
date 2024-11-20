@@ -3,15 +3,22 @@ package main
 import (
 	"context"
 	"fmt"
+	"log"
 	"os"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork/v2"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
 	"github.com/shash-786/Golang/ssh"
 )
 
-var LOCATION string = "westus"
+var (
+	LOCATION           = "westus"
+	RESOURCEGROUPNAME  = "go-azure-demo"
+	VIRTUALNETWORKNAME = "sample-virtual-network"
+	SUBTNETNAME        = "sample-subnet-network"
+)
 
 func main() {
 	var (
@@ -73,8 +80,8 @@ func generateToken() (*azidentity.AzureCLICredential, error) {
 	return token, nil
 }
 
-func launchInstance(ctx context.Context, token *azidentity.AzureCLICredential, subscriptionID, publicKey string) error {
-	client, err := armresources.NewResourceGroupsClient(subscriptionID, token, nil)
+func launchInstance(ctx context.Context, cred *azidentity.AzureCLICredential, subscriptionID, publicKey string) error {
+	client, err := armresources.NewResourceGroupsClient(subscriptionID, cred, nil)
 	if err != nil {
 		return fmt.Errorf("armresources.NewClient error: %v", err)
 	}
@@ -82,9 +89,63 @@ func launchInstance(ctx context.Context, token *azidentity.AzureCLICredential, s
 	resource_grp_params := armresources.ResourceGroup{
 		Location: to.Ptr(LOCATION),
 	}
-	_, err = client.CreateOrUpdate(ctx, "go-azure-demo", resource_grp_params, nil)
+
+	ResourceGroupsClientCreateOrUpdateResponse, err := client.CreateOrUpdate(ctx, RESOURCEGROUPNAME, resource_grp_params, nil)
 	if err != nil {
 		return fmt.Errorf("armresources.client error: %v", err)
+	}
+
+	networkClientFactory, err := armnetwork.NewClientFactory(subscriptionID, cred, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+	virtualNetworksClient := networkClientFactory.NewVirtualNetworksClient()
+
+	vnetpollerResp, err := virtualNetworksClient.BeginCreateOrUpdate(
+		ctx,
+		*ResourceGroupsClientCreateOrUpdateResponse.Name,
+		VIRTUALNETWORKNAME,
+		armnetwork.VirtualNetwork{
+			Location: to.Ptr(LOCATION),
+			Properties: &armnetwork.VirtualNetworkPropertiesFormat{
+				AddressSpace: &armnetwork.AddressSpace{
+					AddressPrefixes: []*string{
+						to.Ptr("10.1.0.0/16"),
+					},
+				},
+			},
+		},
+		nil)
+	if err != nil {
+		return err
+	}
+
+	vnet_response, err := vnetpollerResp.PollUntilDone(ctx, nil)
+	if err != nil {
+		return err
+	}
+
+	subnetsClient := networkClientFactory.NewSubnetsClient()
+
+	subnetpollerResp, err := subnetsClient.BeginCreateOrUpdate(
+		ctx,
+		*ResourceGroupsClientCreateOrUpdateResponse.Name,
+		*vnet_response.Name,
+		SUBTNETNAME,
+		armnetwork.Subnet{
+			Properties: &armnetwork.SubnetPropertiesFormat{
+				AddressPrefix: to.Ptr("10.1.0.0/24"),
+			},
+		},
+		nil,
+	)
+	if err != nil {
+		return err
+	}
+
+	_, err = subnetpollerResp.PollUntilDone(ctx, nil)
+	if err != nil {
+		return err
 	}
 	return nil
 }
